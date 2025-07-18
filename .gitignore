@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# SwiftPM
+/.build/
+/Packages
+Package.pins
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+
+# Firebase config
+GoogleService-Info.plist
+
+# SPM Cache
+.swiftpm/xcode/package.cache/
+
+# Xcode Previews Cache
+*.preview-thumbnails
+*.preview-assets
+
+# Xcode Workspace Settings
+xcshareddata/
+
+# User-specific settings
+*.xcuserstate
