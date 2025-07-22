@@ -14,50 +14,42 @@ class AuthViewModel: ObservableObject {
     @Published var currentUser: UserModel?
     
     init() {
-        self.userSession = Auth.auth().currentUser
-        fetchUser()
+        self.userSession = AuthService.shared.currentUserSession
+        if let uid = userSession?.uid {
+            fetchUser(uid: uid)
+        }
+        
     }
     
     func signIn(email: String, password: String, completion: @escaping (Error?) -> Void) {
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            if let error = error {
-                completion(error)
-            } else {
-                self.userSession = result?.user
-                self.fetchUser()
+        AuthService.shared.signIn(email: email, password: password) { result in
+            switch result {
+            case .success(let user):
+                self.userSession = AuthService.shared.currentUserSession
+                self.currentUser = user
                 completion(nil)
+            case .failure(let error):
+                completion(error)
             }
         }
     }
     
     func register(email: String, password: String, username: String, completion: @escaping (Error?) -> Void) {
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if let error = error {
-                completion(error)
-                return
-            }
-            guard let user = result?.user else { return }
-            
-            let data = ["email": email,
-                        "username": username,
-                        "profileImageUrl": "",
-                        "id": user.uid]
-            
-            Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
-                if let error = error {
-                    completion(error)
-                    return
-                }
-                self.userSession = user
-                self.fetchUser()
+        AuthService.shared.register(email: email, password: password, username: username) { result in
+            switch result {
+            case .success(let user):
+                self.userSession = AuthService.shared.currentUserSession
+                self.currentUser = user
                 completion(nil)
+            case .failure(let error):
+                completion(error)
             }
         }
     }
     
     func signOut(){
         do {
-            try? Auth.auth().signOut()
+            try? AuthService.shared.signOut()
             self.userSession = nil
             self.currentUser = nil
         } catch {
@@ -66,19 +58,14 @@ class AuthViewModel: ObservableObject {
         
     }
     
-    private func fetchUser() {
-        guard let uid = userSession?.uid else { return }
-        Firestore.firestore().collection("users").document(uid).getDocument { snapshot, error in
-            guard let data = snapshot?.data(), error == nil else {
-                print(error?.localizedDescription ?? "")
-                return
+    private func fetchUser(uid: String) {
+        AuthService.shared.fetchUser(uid: uid) { result in
+            switch result {
+            case .success(let user):
+                self.currentUser = user
+            case .failure(let error):
+                print("Fetch user error: \(error.localizedDescription)")
             }
-            do {
-                self.currentUser = try Firestore.Decoder().decode(UserModel.self, from: data)
-            } catch {
-                print("User parse error: \(error.localizedDescription)")
-            }
-            
         }
     }
 }

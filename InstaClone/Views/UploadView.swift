@@ -9,20 +9,52 @@ import SwiftUI
 import PhotosUI
 
 struct UploadView: View {
+    @StateObject private var uploadViewModel = UploadViewModel()
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20){
-                Text("Upload Photo Page")
-                Button("Pick Photo") {
-                    
+                if let data = uploadViewModel.selectedImageData,
+                   let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                }else{
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay {
+                            Text("No Image Selected")
+                        }
                 }
-                Button("Upload"){
-                    
+                PhotosPicker(selection: $uploadViewModel.selectedItem, matching: .images ,  photoLibrary: .shared()) {
+                    Text("📷 Pick Photo")
                 }
-            }.navigationTitle("New Post")
+                .onChange(of: uploadViewModel.selectedItem) { _,_ in
+                    uploadViewModel.handlePhotoSelection()
+                }
+                Button("⬆️ Upload"){
+                    uploadViewModel.uploadPost()
+                }
+                .disabled(uploadViewModel.selectedImageData == nil || uploadViewModel.isUploading)
+                .padding()
+                .foregroundStyle(Color.white)
+                .background(Color.blue)
+                .clipShape(.capsule)
+                
+                if uploadViewModel.isUploading {
+                    ProgressView("Uploading...")
+                }
+                
+                if uploadViewModel.uploadSuccess {
+                    Text("✅ Upload Successful")
+                        .foregroundStyle(.green)
+                }
+            }
+            .padding()
+            .navigationTitle("New Post")
         }
     }
+    
 }
 
 #Preview {

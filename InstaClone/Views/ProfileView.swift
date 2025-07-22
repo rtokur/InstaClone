@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @State private var showLogoutAlert: Bool = false
     
     var body: some View {
         NavigationView{
@@ -21,8 +22,14 @@ struct ProfileView: View {
                 }
                 
                 Button("Log out") {
-                    authViewModel.signOut()
+                    showLogoutAlert = true
                 }.foregroundStyle(.red)
+                    .alert("Are you sure you want to log out?", isPresented: $showLogoutAlert) {
+                        Button("Log out", role: .destructive) {
+                            authViewModel.signOut()
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    }
             }
             .padding()
             .navigationTitle("My Profile")

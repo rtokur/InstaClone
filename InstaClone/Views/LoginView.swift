@@ -59,7 +59,6 @@ struct LoginView: View {
                         .foregroundStyle(Color.blue)
                         .font(.footnote)
                 }
-
                 Spacer()
             }
             .padding()
